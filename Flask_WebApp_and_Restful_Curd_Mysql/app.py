@@ -30,7 +30,9 @@ def Index():
 def image_name(id):
     data = ''
     cursor = db.cursor()
-    cursor.execute("SELECT img_name FROM student_flask WHERE id=%s", (id))
+
+    cursor.callproc('GetUserByID',(id))
+    #cursor.execute("SELECT img_name FROM student_flask WHERE id=%s", (id))
     data = cursor.fetchone()
     return data
 
@@ -78,7 +80,8 @@ def insert():
         if path is empty:
             return "You have not uploading a image"
         else:
-            cursor.execute("INSERT INTO student_flask (name, email, phone, img_name) VALUES (%s, %s, %s, %s)", (name,email,phone,path))
+            #cursor.execute("INSERT INTO student_flask (name, email, phone, img_name) VALUES (%s, %s, %s, %s)", (name,email,phone,path))
+            cursor.callproc('inswithallparm',(name,email,phone,path))
             db.commit()
             cursor.close()
 
@@ -89,15 +92,17 @@ def insert():
 def delete(id_data):
     cursor = db.cursor()
 
-    query = """ DELETE FROM student_flask
-                WHERE id = %s """
-    data = (id_data)
+    #query = """ DELETE FROM student_flask
+    #            WHERE id = %s """
+
+    #data = (id_data)
 
     try:
         c = direct_img_remove(id_data)
         if c is True:
             cursor = db.cursor()
-            cursor.execute(query, data)
+            #cursor.execute(query, data)
+            cursor.callproc('delwithid',(id_data))
             db.commit()
             flash("Requested User 'DELETED' Successfully")
 
@@ -121,14 +126,15 @@ def update():
             email = request.form['email']
             phone = request.form['phone']
 
-            query = """ UPDATE student_flask
-                            SET name = %s,email=%s,phone=%s
-                            WHERE id = %s """
-            data = (name,email,phone,id_data)
+            #query = """ UPDATE student_flask
+                            #SET name = %s,email=%s,phone=%s
+                            #WHERE id = %s """
+            #data = (name,email,phone,id_data)
 
             try:
                 cursor = db.cursor()
-                cursor.execute(query, data)
+                #cursor.execute(query, data)
+                cursor.callproc('update_user_b_data',(name,email,phone,id_data))
                 db.commit()
 
             except Error as error:
