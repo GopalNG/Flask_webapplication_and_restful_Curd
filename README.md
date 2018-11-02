@@ -47,6 +47,7 @@ Install the Flask.
 > Install Pip
 > pip install flask-restful
 > pip install flask
+> pip install pymysql #for using mysql with flask
 ```
 #### I have used POSTMAN for API Testing 
 ``` 
