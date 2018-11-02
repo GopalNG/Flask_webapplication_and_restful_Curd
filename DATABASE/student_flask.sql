@@ -34,16 +34,16 @@ CREATE TABLE `student_flask` (
   `email` varchar(125) NOT NULL,
   `phone` bigint(255) NOT NULL,
   `img_name` varchar(255) NOT NULL,
-  `Gender` varchar(70) NOT NULL
+  
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `student_flask`
 --
 
-INSERT INTO `student_flask` (`id`, `name`, `email`, `phone`, `img_name`, `Gender`) VALUES
-(60, 'nmail', 'n@mail', 9876543210, 'v.png', ''),
-(61, 'GLion', 'nagubandigopal@gmail.com', 1234567890, '2018203121_lion-1366x768.jpg', '');
+INSERT INTO `student_flask` (`id`, `name`, `email`, `phone`, `img_name`) VALUES
+(60, 'nmail', 'n@mail', 9876543210, '20180321_v.png'),
+(61, 'GLion', 'nagubandigopal@gmail.com', 1234567890, '2018203121_lion-1366x768.jpg');
 
 --
 -- Indexes for dumped tables
