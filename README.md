@@ -4,7 +4,7 @@
 
 Flask_webapplication_and_restful_Curd Using MySql DB
 This is an example which is hand coded with flask and flaskrestful to perform curd operations Using MYSQL as a database .
-CRUD operations ARE
+##### Definition CRUD operations ?
   - Create
   - Read
   - Update
