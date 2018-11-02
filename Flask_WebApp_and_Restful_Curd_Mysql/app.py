@@ -12,7 +12,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = pymysql.connect("localhost","root","","test")
 
 
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif']) #Allowed only images from insert
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -32,7 +32,6 @@ def image_name(id):
     cursor = db.cursor()
 
     cursor.callproc('GetUserByID',(id))
-    #cursor.execute("SELECT img_name FROM student_flask WHERE id=%s", (id))
     data = cursor.fetchone()
     return data
 
@@ -80,7 +79,6 @@ def insert():
         if path is empty:
             return "You have not uploading a image"
         else:
-            #cursor.execute("INSERT INTO student_flask (name, email, phone, img_name) VALUES (%s, %s, %s, %s)", (name,email,phone,path))
             cursor.callproc('inswithallparm',(name,email,phone,path))
             db.commit()
             cursor.close()
@@ -91,17 +89,10 @@ def insert():
 @app.route('/delete/<string:id_data>', methods = ['GET'])
 def delete(id_data):
     cursor = db.cursor()
-
-    #query = """ DELETE FROM student_flask
-    #            WHERE id = %s """
-
-    #data = (id_data)
-
     try:
         c = direct_img_remove(id_data)
         if c is True:
             cursor = db.cursor()
-            #cursor.execute(query, data)
             cursor.callproc('delwithid',(id_data))
             db.commit()
             flash("Requested User 'DELETED' Successfully")
@@ -114,9 +105,6 @@ def delete(id_data):
         #cursor.close()
         return redirect(url_for('Index'))
 
-
-
-
 @app.route('/update',methods=['POST','GET'])
 def update():
     if request.method == 'POST':
@@ -126,14 +114,8 @@ def update():
             email = request.form['email']
             phone = request.form['phone']
 
-            #query = """ UPDATE student_flask
-                            #SET name = %s,email=%s,phone=%s
-                            #WHERE id = %s """
-            #data = (name,email,phone,id_data)
-
             try:
                 cursor = db.cursor()
-                #cursor.execute(query, data)
                 cursor.callproc('update_user_b_data',(name,email,phone,id_data))
                 db.commit()
 
@@ -144,7 +126,8 @@ def update():
                 cursor.close()
                 return redirect(url_for('Index'))
 
-#actually here i am trying to update the only ---image
+#actually here i am trying to update the only ---image 
+### I WILL UPDATE THIS CODE ASAP you can place all above code from Line 134 to 143 in update code after line 116
 @app.route('/upda/<string:userid>',methods=['GET']) # """UPDATE student_flask SET img_name WHERE id=%s """
 def upda(userid):
     user_id = userid
