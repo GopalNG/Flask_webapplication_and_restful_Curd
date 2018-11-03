@@ -40,7 +40,7 @@ For Restfull Operations I Used Flask Restful Library of Flask.
 
 Offical Website of [Flask](https://flask.pocoo.org/).
 
-Install the Flask.
+Below mentioned librarys are required to do this project.
 
 ```win
 > Install Python
