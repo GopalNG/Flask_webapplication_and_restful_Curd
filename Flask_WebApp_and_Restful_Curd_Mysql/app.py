@@ -4,142 +4,109 @@ import os
 from werkzeug import secure_filename
 import time
 import re
+import dboperations
+
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 UPLOAD_FOLDER = 'static\images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 db = pymysql.connect("localhost","root","","test")
 
-
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif']) #Allowed only images from insert
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 @app.route('/')
 def Index():
-    cursor = db.cursor()
-    cursor.callproc('FetchAll')
-    data = cursor.fetchall()
-    cursor.close()
+    data = dboperations.fechallusers()
     return render_template('index.html', students=data)
-
-#@app.route('/imgnam/<string:id>', methods = ['GET'])
-def image_name(id):
-    data = ''
-    cursor = db.cursor()
-
-    cursor.callproc('GetUserByID',(id))
-    data = cursor.fetchone()
-    return data
-
-#remove image with image_name from the directory using unlink function
-#@app.route('/imgrem/<string:imgname>', methods = ['GET'])
-def remove_img(imgname):
-    mna = imgname
-    c = app.config['UPLOAD_FOLDER'] + '\\'
-    path_of_img = c + mna
-    cm = path_of_img
-    os.unlink(os.path.join(cm))
-    return "done",200
-
-#@app.route('/remimg/<int:id>', methods = ['GET']) #just for function check
-def direct_img_remove(id):
-    name_image = image_name(id)
-    #os.remove(name_image)
-    c = app.config['UPLOAD_FOLDER'] + '\\'
-    path_of_img = c + str(name_image[0])
-    cm = path_of_img
-    os.unlink(cm)
-    return True
 
 @app.route('/insert', methods = ['POST'])
 def insert():
     cursor = db.cursor()
     if request.method == "POST":
-        flash("Data Inserted Successfully")
         name = request.form['name']
         email = request.form['email']
         phone = request.form['phone']
-
         image = request.files['imgfile'] #myfile is name of input tag
 
         if image and allowed_file(image.filename):
             fileTemp = secure_filename(image.filename)
             time_p = time.strftime('%Y%H%M%S')
-
             filename = time_p+"_"+fileTemp
-
             image.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-
             path = filename
         empty=''
-        if path is empty:
-            return "You have not uploading a image"
+        if not image:
+            flash("You have not uploading a image")
+            return  redirect(url_for('Index'))
         else:
+            #cursor.execute("INSERT INTO student_flask (name, email, phone, img_name) VALUES (%s, %s, %s, %s)", (name,email,phone,path))
             cursor.callproc('inswithallparm',(name,email,phone,path))
             db.commit()
             cursor.close()
-
+            flash("Data Inserted Successfully")
         return redirect(url_for('Index'))
-
 
 @app.route('/delete/<string:id_data>', methods = ['GET'])
 def delete(id_data):
-    cursor = db.cursor()
-    try:
-        c = direct_img_remove(id_data)
-        if c is True:
-            cursor = db.cursor()
-            cursor.callproc('delwithid',(id_data))
-            db.commit()
-            flash("Requested User 'DELETED' Successfully")
-
-
-    except Error as error:
-        print(error)
-
-    finally:
-        #cursor.close()
+    dur = dboperations.deleteuser(id_data)
+    if dur is True:
+        flash("Successfully Deleted Requested")
         return redirect(url_for('Index'))
+    else:
+        flash("Something Gone Worng !! TryAgain After Sometime")
 
 @app.route('/update',methods=['POST','GET'])
 def update():
     if request.method == 'POST':
-        if 'file' not in request.files:
-            id_data = request.form['id']
-            name = request.form['name']
-            email = request.form['email']
-            phone = request.form['phone']
+        id_data = request.form['id']
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        try:
+            obj = dboperations.updateuserinfo(name,email,phone,id_data)
+            p = obj.updateuser()
+            if p is True:
+                flash("Done")
+            else:
+                pass
+        except Error as error:
+            print(error)
+        finally:
+            return redirect(url_for('Index'))
 
-            try:
-                cursor = db.cursor()
-                cursor.callproc('update_user_b_data',(name,email,phone,id_data))
-                db.commit()
-
-            except Error as error:
-                print(error)
-
-            finally:
-                cursor.close()
-                return redirect(url_for('Index'))
-
-#actually here i am trying to update the only ---image 
-### I WILL UPDATE THIS CODE ASAP you can place all above code from Line 134 to 143 in update code after line 116
-@app.route('/upda/<string:userid>',methods=['GET']) # """UPDATE student_flask SET img_name WHERE id=%s """
-def upda(userid):
-    user_id = userid
+#actually here i am trying to update the only ---image
+@app.route('/upda',methods=['GET','POST'])
+def upda():
+    id_data = request.form['id']
+    user_id=id_data
     image = request.files['imgfile']
     if image and allowed_file(image.filename):
-        imn = direct_img_remove(user_id)
-        if imn is True:
-            fileTemp = secure_filename(image.filename)
-            time_p = time.strftime('%Y%H%M%S')
-            filename = time_p+"_"+fileTemp
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-            path = filename
+        dboperations.direct_img_remove(user_id)
+        fileTemp = secure_filename(image.filename)
+        time_p = time.strftime('%Y%H%M%S')
+        filename = time_p+"_"+fileTemp
+        image.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+        path = filename
+        query = """ UPDATE student_flask
+                        SET img_name=%s
+                        WHERE id = %s """
+        data = (path,id_data)
+
+        try:
+            cursor = db.cursor()
+            cursor.execute(query, data)
+            db.commit()
+            flash("Successfully UPDATEed your Requested images it will update soon or refresh page")
+        except Error as error:
+            print(error)
+
+        finally:
+            cursor.close()
             return redirect(url_for('Index'))
 
 if __name__ == "__main__":
