@@ -54,9 +54,8 @@ Below mentioned librarys are required to do this project.
 Install from offical Postman Website (https://www.getpostman.com/)
 ````
 ### Todos
-
- - Update of Image IN WebAPplication
- - Insert and delete image IN RestFul Application i.e API
+ - Recode API code , 
+ - Insert and delete image IN RestFul Application i.e API .
 
 License
 ---- MIT
