@@ -4,7 +4,7 @@ import os
 from werkzeug import secure_filename
 import time
 import re
-import dboperations
+import dboperations #In project file | which have database operations.
 
 
 app = Flask(__name__)
@@ -19,11 +19,12 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+#starting page which loads all information
 @app.route('/')
 def Index():
     data = dboperations.fechallusers()
     return render_template('index.html', students=data)
-
+#insert operation
 @app.route('/insert', methods = ['POST'])
 def insert():
     cursor = db.cursor()
@@ -51,6 +52,7 @@ def insert():
             flash("Data Inserted Successfully")
         return redirect(url_for('Index'))
 
+#delete information 
 @app.route('/delete/<string:id_data>', methods = ['GET'])
 def delete(id_data):
     dur = dboperations.deleteuser(id_data)
@@ -59,7 +61,8 @@ def delete(id_data):
         return redirect(url_for('Index'))
     else:
         flash("Something Gone Worng !! TryAgain After Sometime")
-
+        
+#update infomation except image
 @app.route('/update',methods=['POST','GET'])
 def update():
     if request.method == 'POST':
@@ -79,7 +82,7 @@ def update():
         finally:
             return redirect(url_for('Index'))
 
-#actually here i am trying to update the only ---image
+#This route will update image
 @app.route('/upda',methods=['GET','POST'])
 def upda():
     id_data = request.form['id']
